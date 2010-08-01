@@ -1,4 +1,6 @@
 require File.dirname(__FILE__) + "/../morning_glory"
+require 'heroku'
+require 'heroku/command'
 
 namespace :morning_glory do
   namespace :cloudfront do
@@ -6,13 +8,25 @@ namespace :morning_glory do
     @@prev_cdn_revision = nil
     @@scm_commit_required = false
     
-    begin
-      MORNING_GLORY_CONFIG = YAML.load_file("#{RAILS_ROOT}/config/morning_glory.yml") if !defined? MORNING_GLORY_CONFIG
-    rescue
+    def get_heroku_config!
+      user, pass = File.read(File.expand_path("~/.heroku/credentials")).split("\n")
+      heroku = Heroku::Client.new(user, pass)
+      cmd = Heroku::Command::BaseWithApp.new([])
+      remotes = cmd.git_remotes(File.dirname(__FILE__) + "/../..")
+      app = remotes.detect {|key, value| value == (ENV['APP'] || cmd.app)}.last
+      heroku_config = heroku.config_vars(app)
+    end
+
+    def morning_glory_config
+      @morning_glory_config ||= begin
+        local_config = YAML.load_file("#{RAILS_ROOT}/config/morning_glory.yml")
+        heroku_config = get_heroku_config!
+        local_config.merge("bucket" => heroku_config['S3_BUCKET'], "access_key_id" => heroku_config['S3_KEY'], "secret_access_key" => heroku_config['S3_SECRET'])
+      end
     end
   
     def check_config
-      if !defined? MORNING_GLORY_CONFIG[Rails.env] || MORNING_GLORY_CONFIG[Rails.env]['enabled'] != true
+      if !defined? morning_glory_config[Rails.env] || morning_glory_config[Rails.env]['enabled'] != true
           raise "Deployment appears to be disabled for this environment (#{Rails.env}) within config/morning_glory.yml. Specify an alternative environment with RAILS_ENV={environment name}."
       end
       if !defined? S3_CONFIG[Rails.env]
@@ -55,17 +69,17 @@ namespace :morning_glory do
     end
 
     def update_revision
-      prev = MORNING_GLORY_CONFIG['revision'].to_s
+      prev = morning_glory_config['revision'].to_s
 
       rev = get_revision
       
-      MORNING_GLORY_CONFIG['revision'] = rev
+      morning_glory_config['revision'] = rev
       ENV['RAILS_ASSET_ID'] = CLOUDFRONT_REVISION_PREFIX + rev
     
       # Store the previous revision so we can delete the bucket from S3 later after deploy
       @@prev_cdn_revision = CLOUDFRONT_REVISION_PREFIX + prev
     
-      File.open("#{RAILS_ROOT}/config/morning_glory.yml", 'w') { |f| YAML.dump(MORNING_GLORY_CONFIG, f) }
+      File.open("#{RAILS_ROOT}/config/morning_glory.yml", 'w') { |f| YAML.dump(morning_glory_config, f) }
     
       puts "* CDN revision updated for '#{Rails.env}' environment to #{ENV['RAILS_ASSET_ID']}" 
     end
@@ -94,17 +108,17 @@ namespace :morning_glory do
       SYNC_DIRECTORY  = File.join(Rails.root, 'public')
       TEMP_DIRECTORY  = File.join(Rails.root, 'tmp', 'morning_glory', 'cloudfront', Rails.env, ENV['RAILS_ASSET_ID']);
       # Configuration constants
-      BUCKET          = MORNING_GLORY_CONFIG['bucket'] || Rails.env
-      DIRECTORIES     = MORNING_GLORY_CONFIG[Rails.env]['asset_directories'] || %w(images javascripts stylesheets)
-      CONTENT_TYPES   = MORNING_GLORY_CONFIG[Rails.env]['content_types'] || {
+      BUCKET          = morning_glory_config['bucket'] || Rails.env
+      DIRECTORIES     = morning_glory_config[Rails.env]['asset_directories'] || %w(images javascripts stylesheets)
+      CONTENT_TYPES   = morning_glory_config[Rails.env]['content_types'] || {
                           :jpg => 'image/jpeg',
                           :png => 'image/png',
                           :gif => 'image/gif',
                           :css => 'text/css',
                           :js  => 'text/javascript'
                         }
-      S3_LOGGING_ENABLED = MORNING_GLORY_CONFIG[Rails.env]['s3_logging_enabled'] || false
-      DELETE_PREV_REVISION = MORNING_GLORY_CONFIG[Rails.env]['delete_prev_rev'] || false
+      S3_LOGGING_ENABLED = morning_glory_config[Rails.env]['s3_logging_enabled'] || false
+      DELETE_PREV_REVISION = morning_glory_config[Rails.env]['delete_prev_rev'] || false
       REGEX_ROOT_RELATIVE_CSS_URL = /url\((\'|\")?(\/+.*(#{CONTENT_TYPES.keys.map { |k| '\.' + k.to_s }.join('|')}))\1?\)/
     
       # Copy all the assets into the temp directory for processing

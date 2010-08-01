@@ -14,7 +14,6 @@ Sample config/morning_glory.yml:
   --- 
   production: 
     delete_prev_rev: true
-    bucket: cdn.production.yoursite.com
     s3_logging_enabled: true
     enabled: true
     asset_directories: 
@@ -23,7 +22,6 @@ Sample config/morning_glory.yml:
     - stylesheets
     revision: "20100316165112"
   staging: 
-    bucket: cdn.staging.yoursite.com
     enabled: true
   testing: 
     enabled: false
@@ -32,13 +30,14 @@ Sample config/morning_glory.yml:
 
 
 = Amazon AWS =
-If you are using Heroku, set your S3 credentials using heroku config :
+If you are using Heroku, set your S3 credentials using "heroku config" :
 
 heroku config:add S3_KEY=[your S3 key]
 heroku config:add S3_SECRET=[your S3 secret]
 heroku config:add S3_BUCKET=[your S3 bucket]
 
-Otherwise, you will need to manually create & configure your config/s3.yml file.
+You will also need to manually create & configure your config/s3.yml file (you can leave the values
+for "bucket", "access_key_id" and  "secret_access_key" blank if they are in your Heroku environment).
 This file contains your access credentials for accessing the Amazon S3 service.
 Sample config/s3.yml:
 

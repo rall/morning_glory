@@ -13,6 +13,6 @@ end
 
 if defined? MORNING_GLORY_CONFIG
   if MORNING_GLORY_CONFIG[Rails.env]['enabled'] == true
-    ENV['RAILS_ASSET_ID'] = CLOUDFRONT_REVISION_PREFIX + MORNING_GLORY_CONFIG[Rails.env]['revision'].to_s
+    ENV['RAILS_ASSET_ID'] = CLOUDFRONT_REVISION_PREFIX + MORNING_GLORY_CONFIG['revision'].to_s
   end
 end

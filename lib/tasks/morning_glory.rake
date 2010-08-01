@@ -94,7 +94,7 @@ namespace :morning_glory do
       SYNC_DIRECTORY  = File.join(Rails.root, 'public')
       TEMP_DIRECTORY  = File.join(Rails.root, 'tmp', 'morning_glory', 'cloudfront', Rails.env, ENV['RAILS_ASSET_ID']);
       # Configuration constants
-      BUCKET          = MORNING_GLORY_CONFIG[Rails.env]['bucket'] || Rails.env    
+      BUCKET          = MORNING_GLORY_CONFIG['bucket'] || Rails.env
       DIRECTORIES     = MORNING_GLORY_CONFIG[Rails.env]['asset_directories'] || %w(images javascripts stylesheets)
       CONTENT_TYPES   = MORNING_GLORY_CONFIG[Rails.env]['content_types'] || {
                           :jpg => 'image/jpeg',

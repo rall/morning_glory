@@ -16,7 +16,7 @@ module MorningGlory
 end
 
 begin
-  bucket_from_heroku_config = heroku_config.has_key?('S3_BUCKET') ? { :bucket => heroku_config['S3_BUCKET'] } : {}
+  bucket_from_heroku_config = heroku_config.has_key?('S3_BUCKET') ? { "bucket" => heroku_config['S3_BUCKET'] } : {}
   MORNING_GLORY_CONFIG = YAML.load_file("#{RAILS_ROOT}/config/morning_glory.yml").merge(bucket_from_heroku_config) if !defined? MORNING_GLORY_CONFIG
 rescue
   raise "Error loading MorningGlory configuration files. Please check config/morning_glory.yml is configured correctly."
@@ -24,7 +24,7 @@ end
 
 S3_CONFIG = begin
   if heroku_config.has_key?('S3_KEY') and heroku_config.has_key?('S3_SECRET')
-    { :access_key_id => heroku_config['S3_KEY'], :secret_access_key => heroku_config['S3_SECRET'] }
+    { "access_key_id" => heroku_config['S3_KEY'], "secret_access_key" => heroku_config['S3_SECRET'] }
   else
     YAML.load_file("#{RAILS_ROOT}/config/s3.yml")[Rails.env] if !defined? S3_CONFIG
   end

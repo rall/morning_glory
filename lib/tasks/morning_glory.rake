@@ -55,11 +55,11 @@ namespace :morning_glory do
     end
 
     def update_revision
-      prev = MORNING_GLORY_CONFIG[Rails.env]['revision'].to_s
+      prev = MORNING_GLORY_CONFIG['revision'].to_s
 
       rev = get_revision
       
-      MORNING_GLORY_CONFIG[Rails.env]['revision'] = rev
+      MORNING_GLORY_CONFIG['revision'] = rev
       ENV['RAILS_ASSET_ID'] = CLOUDFRONT_REVISION_PREFIX + rev
     
       # Store the previous revision so we can delete the bucket from S3 later after deploy

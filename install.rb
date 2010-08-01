@@ -37,17 +37,13 @@ heroku config:add S3_SECRET=[your S3 secret]
 heroku config:add S3_BUCKET=[your S3 bucket]
 
 You will also need to manually create & configure your config/s3.yml file (you can leave the values
-for "bucket", "access_key_id" and  "secret_access_key" blank if they are in your Heroku environment).
+for "access_key_id" and "secret_access_key" blank if they are in your Heroku environment).
 This file contains your access credentials for accessing the Amazon S3 service.
 Sample config/s3.yml:
 
   ---
-  production:
-    access_key_id: YOUR_ACCESS_KEY
-    secret_access_key: YOUR_SECRET_ACCESS_KEY
-  staging:
-    access_key_id: YOUR_ACCESS_KEY
-    secret_access_key: YOUR_SECRET_ACCESS_KEY
+  access_key_id: YOUR_ACCESS_KEY
+  secret_access_key: YOUR_SECRET_ACCESS_KEY
 
 EOF
 puts '=' * 80

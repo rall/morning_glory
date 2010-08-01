@@ -16,20 +16,28 @@ namespace :morning_glory do
       app = remotes.detect {|key, value| value == (ENV['APP'] || cmd.app)}.last
       heroku_config = heroku.config_vars(app)
     end
-
+    
     def morning_glory_config
       @morning_glory_config ||= begin
         local_config = YAML.load_file("#{RAILS_ROOT}/config/morning_glory.yml")
         heroku_config = get_heroku_config!
-        local_config.merge("bucket" => heroku_config['S3_BUCKET'], "access_key_id" => heroku_config['S3_KEY'], "secret_access_key" => heroku_config['S3_SECRET'])
+        local_config.merge("bucket" => heroku_config['S3_BUCKET'])
       end
     end
-  
+    
+    def s3_config
+      @s3_config ||= begin
+        local_config = YAML.load_file("#{RAILS_ROOT}/config/s3.yml")
+        heroku_config = get_heroku_config!
+        local_config.merge("access_key_id" => heroku_config['S3_KEY'], "secret_access_key" => heroku_config['S3_SECRET'])
+      end
+    end
+    
     def check_config
       if !defined? morning_glory_config[Rails.env] || morning_glory_config[Rails.env]['enabled'] != true
           raise "Deployment appears to be disabled for this environment (#{Rails.env}) within config/morning_glory.yml. Specify an alternative environment with RAILS_ENV={environment name}."
       end
-      if !defined? S3_CONFIG[Rails.env]
+      if !defined? s3_config[Rails.env]
         raise "You seem to be lacking your Amazon S3 configuration file, config/s3.yml"
       end
     end
@@ -148,8 +156,8 @@ namespace :morning_glory do
       # TODO: Update references within JS files
     
       AWS::S3::Base.establish_connection!(
-        :access_key_id     => S3_CONFIG['access_key_id'],
-        :secret_access_key => S3_CONFIG['secret_access_key']
+        :access_key_id     => s3_config['access_key_id'],
+        :secret_access_key => s3_config['secret_access_key']
       )
 
       begin

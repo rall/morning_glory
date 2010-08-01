@@ -19,6 +19,10 @@ h2. What it doesn't do
 
 Morning Glory cannot configure your CloudFront distributions for you automatically. You will manually have to login to your AWS Management Console account, "https://console.aws.amazon.com/cloudfront/home":https://console.aws.amazon.com/cloudfront/home, and set up a distribution pointing to an S3 Bucket.
 
+h2. What does this fork do?
+
+This fork is for using Morning Glory on Heroku. It looks for your S3 configuration in your Heroku environment before checking the plugin's config file.
+
 h2. Installation
 
 <pre>

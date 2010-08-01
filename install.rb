@@ -32,7 +32,13 @@ Sample config/morning_glory.yml:
 
 
 = Amazon AWS =
-You will need to manually create & configure your config/s3.yml file.
+If you are using Heroku, set your S3 credentials using heroku config :
+
+heroku config:add S3_KEY=[your S3 key]
+heroku config:add S3_SECRET=[your S3 secret]
+heroku config:add S3_BUCKET=[your S3 bucket]
+
+Otherwise, you will need to manually create & configure your config/s3.yml file.
 This file contains your access credentials for accessing the Amazon S3 service.
 Sample config/s3.yml:
 
